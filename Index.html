@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>karthik@dev:~$</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg-raised:#0f151f;
+    --line:#1c2532;
+    --text:#c8d1de;
+    --text-dim:#5b6779;
+    --green:#3ddc97;
+    --cyan:#6fd1ff;
+    --amber:#ffb454;
+    --red:#ff6b6b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'JetBrains Mono', monospace;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+    overflow-x:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+
+  .scanlines{
+    position:fixed; inset:0; pointer-events:none; z-index:50;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.018) 0px,
+      rgba(255,255,255,0.018) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode:overlay;
+  }
+  .vignette{
+    position:fixed; inset:0; pointer-events:none; z-index:49;
+    background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+
+  .terminal{
+    width:100%;
+    max-width:760px;
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 0 0 1px rgba(61,220,151,0.04), 0 30px 80px -20px rgba(0,0,0,0.7), 0 0 60px -15px rgba(61,220,151,0.08);
+    overflow:hidden;
+    animation:powerOn 0.7s ease-out;
+  }
+  @keyframes powerOn{
+    0%{ opacity:0; transform:scale(0.98) translateY(6px); filter:brightness(2) saturate(0);}
+    60%{ opacity:1; filter:brightness(1.15) saturate(1);}
+    100%{ opacity:1; transform:scale(1) translateY(0); filter:brightness(1) saturate(1);}
+  }
+
+  .titlebar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:11px 14px;
+    background:#0d1219;
+    border-bottom:1px solid var(--line);
+  }
+  .dot{width:11px;height:11px;border-radius:50%;}
+  .dot.r{background:#ff5f56;}
+  .dot.y{background:#ffbd2e;}
+  .dot.g{background:#27c93f;}
+  .titlebar span{
+    margin-left:8px;
+    font-size:12px;
+    color:var(--text-dim);
+    letter-spacing:0.02em;
+  }
+
+  .crt{
+    padding:22px 24px 26px;
+    font-size:13.5px;
+    line-height:1.75;
+    min-height:420px;
+  }
+
+  .line{ opacity:0; white-space:pre-wrap; word-break:break-word; }
+  .line.show{ opacity:1; }
+  .prompt{ color:var(--cyan); }
+  .ok{ color:var(--green); }
+  .warn{ color:var(--amber); }
+  .dim{ color:var(--text-dim); }
+  .path{ color:var(--cyan); }
+
+  .cursor{
+    display:inline-block;
+    width:8px; height:15px;
+    background:var(--green);
+    margin-left:2px;
+    vertical-align:-2px;
+    animation:blink 1s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .profile{
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px dashed var(--line);
+    opacity:0;
+    transform:translateY(8px);
+  }
+  .profile.reveal{
+    animation:rise 0.6s ease forwards;
+  }
+  @keyframes rise{
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .name{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:800;
+    font-size:26px;
+    letter-spacing:-0.01em;
+    color:#eef3f8;
+  }
+  .name .caret{ color:var(--green); }
+
+  .role{
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+    color:var(--text-dim);
+    margin-top:4px;
+    letter-spacing:0.01em;
+  }
+  .role b{ color:var(--cyan); font-weight:600; }
+
+  .tags{
+    margin-top:14px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+  }
+  .tag{
+    font-family:'Inter', sans-serif;
+    font-size:11.5px;
+    padding:4px 9px;
+    border-radius:5px;
+    border:1px solid var(--line);
+    color:var(--text-dim);
+    background:rgba(255,255,255,0.015);
+  }
+  .tag.hot{ color:var(--green); border-color:rgba(61,220,151,0.35); }
+
+  .links{
+    margin-top:22px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .btn{
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:13px;
+    padding:11px 18px;
+    border-radius:7px;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    border:1px solid var(--line);
+    color:var(--text);
+    position:relative;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn.primary{
+    background:var(--green);
+    color:#06120c;
+    border-color:var(--green);
+  }
+  .btn.primary:hover{
+    box-shadow:0 8px 24px -6px rgba(61,220,151,0.55);
+  }
+  .btn.ghost:hover{
+    border-color:var(--cyan);
+    color:var(--cyan);
+  }
+  .btn svg{ width:15px; height:15px; }
+
+  .footer{
+    margin-top:20px;
+    font-size:11px;
+    color:var(--text-dim);
+    opacity:0;
+  }
+  .footer.reveal{ animation:rise 0.6s ease forwards 0.15s; }
+  .footer .k{ color:var(--amber); }
+</style>
+</head>
+<body>
+
+<div class="vignette"></div>
+<div class="scanlines"></div>
+
+<div class="terminal">
+  <div class="titlebar">
+    <span class="dot r"></span>
+    <span class="dot y"></span>
+    <span class="dot g"></span>
+    <span>karthik@dev-box: ~/profile</span>
+  </div>
+  <div class="crt" id="crt"></div>
+</div>
+
+<script>
+const lines = [
+  { html: `<span class="prompt">$</span> ./init_profile.sh` , cls:'' },
+  { html: `<span class="dim">Booting environment...</span>`, cls:'' },
+  { html: `<span class="ok">[ OK ]</span> .NET runtime mounted <span class="dim">(C# · EF Core · SQL Server)</span>`, cls:'' },
+  { html: `<span class="ok">[ OK ]</span> React / TypeScript surface online`, cls:'' },
+  { html: `<span class="ok">[ OK ]</span> LangGraph agent runtime initialized`, cls:'' },
+  { html: `<span class="warn">[ SCAN ]</span> Running OWASP baseline checks... <span class="ok">clear</span>`, cls:'' },
+  { html: `<span class="dim">Loading identity module from</span> <span class="path">~/.identity/karthik.json</span> ...`, cls:'' },
+];
+
+const crt = document.getElementById('crt');
+let i = 0;
+
+function typeLine(cb){
+  if(i >= lines.length){ cb(); return; }
+  const div = document.createElement('div');
+  div.className = 'line';
+  crt.appendChild(div);
+  div.innerHTML = lines[i].html;
+  requestAnimationFrame(()=> div.classList.add('show'));
+  i++;
+  setTimeout(()=> typeLine(cb), i === 1 ? 550 : 420);
+}
+
+typeLine(()=>{
+  const cursorLine = document.createElement('div');
+  cursorLine.className = 'line show';
+  cursorLine.innerHTML = `<span class="prompt">$</span> <span class="cursor"></span>`;
+  crt.appendChild(cursorLine);
+
+  setTimeout(()=>{
+    cursorLine.remove();
+
+    const profile = document.createElement('div');
+    profile.className = 'profile';
+    profile.innerHTML = `
+      <div class="name">Karthik<span class="caret">_</span></div>
+      <div class="role">Full-Stack Developer — <b>.NET + React</b> by day, <b>multi-agent AI systems</b> by night</div>
+      <div class="tags">
+        <span class="tag hot">LangGraph</span>
+        <span class="tag hot">LangChain</span>
+        <span class="tag">ASP.NET Core</span>
+        <span class="tag">React / TS</span>
+        <span class="tag">FastAPI</span>
+        <span class="tag">OWASP</span>
+        <span class="tag">Cisco CyberOps</span>
+      </div>
+      <div class="links">
+        <a class="btn primary" href="https://github.com/karthikkarthi-Ghost" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          Enter GitHub
+        </a>
+        <a class="btn ghost" href="https://www.linkedin.com/in/a-n-karthik-92832722a" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.15C0 .51.5 0 1.15 0h13.7C15.5 0 16 .51 16 1.15v13.7c0 .64-.5 1.15-1.15 1.15H1.15C.5 16 0 15.49 0 14.85V1.15zM4.75 6H2.4v7.5h2.35V6zM3.58 4.96a1.36 1.36 0 1 0 0-2.72 1.36 1.36 0 0 0 0 2.72zM13.5 13.5v-4.1c0-2.2-1.17-3.22-2.73-3.22-1.26 0-1.82.7-2.13 1.18V6H6.3c.03.63 0 7.5 0 7.5h2.34V9.35c0-.22.02-.44.08-.6.18-.44.58-.9 1.26-.9.89 0 1.24.68 1.24 1.66V13.5h2.28z"/></svg>
+          LinkedIn
+        </a>
+        <a class="btn ghost" href="mailto:karthik3004an@gmail.com">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 3A1.75 1.75 0 0 0 0 4.75v6.5C0 12.216.784 13 1.75 13h12.5A1.75 1.75 0 0 0 16 11.25v-6.5A1.75 1.75 0 0 0 14.25 3H1.75zM1.5 4.75a.25.25 0 0 1 .25-.25h12.5a.25.25 0 0 1 .25.25v.243l-6.5 4.06-6.5-4.06V4.75zm0 1.7v4.8c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25v-4.8L8.53 10.7a.75.75 0 0 1-.8 0L1.5 6.45z"/></svg>
+          Email
+        </a>
+      </div>
+    `;
+    crt.appendChild(profile);
+    requestAnimationFrame(()=> profile.classList.add('reveal'));
+
+    const footer = document.createElement('div');
+    footer.className = 'footer';
+    footer.innerHTML = `<span class="k">$</span> process exited with code 0 · Bengaluru, India`;
+    crt.appendChild(footer);
+    requestAnimationFrame(()=> footer.classList.add('reveal'));
+  }, 500);
+});
+</script>
+
+</body>
+</html>
